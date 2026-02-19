@@ -16,6 +16,35 @@ const getCleanUrl = (c: any) => {
 const enjoyText = 'Enjoying the chronicles?';
 ---
 
+<script is:inline define:vars={{
+  novelId: (novel?.data as any)?.id || (chapter.data as any)?.novel_id,
+  novelTitle: novel?.data?.title || (chapter.data as any)?.novel_title,
+  chapterTitle: chapter.data.title,
+  volumeId: (chapter.data as any)?.vol_id
+}}>
+  function saveReadingProgress() {
+    if (typeof window === 'undefined' || !novelId) return;
+    const path = window.location.pathname;
+    const map = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
+    map[novelId] = {
+      path,
+      chapterTitle,
+      novelTitle,
+      volId: volumeId
+    };
+    localStorage.setItem('reading-progress-map', JSON.stringify(map));
+    localStorage.setItem('last-read', JSON.stringify({
+      novelId,
+      novelTitle,
+      chapterTitle,
+      path
+    }));
+  }
+
+  saveReadingProgress();
+  document.addEventListener('astro:page-load', saveReadingProgress);
+</script>
+
 <div id="reader-container" class="min-h-screen transition-colors duration-500 pt-10 pb-32 w-full max-w-none overflow-x-hidden">
   
   <div class="w-full px-4 md:px-12 lg:px-24 mx-auto box-border max-w-none">
@@ -198,10 +227,11 @@ const enjoyText = 'Enjoying the chronicles?';
 
 <style is:global>
   #chapter-navigation { display: flex !important; visibility: visible !important; opacity: 1 !important; }
-  #reading-content p { margin-bottom: 2em; text-indent: 1.5em; }
-  #reading-content p:first-of-type { text-indent: 0; }
-  .reading-word.active-word { background: rgba(var(--accent-rgb), 0.2); color: var(--accent) !important; border-bottom: 1px solid var(--accent); border-radius: 2px; }
+  #reading-content p { margin-bottom: 2em; text-indent: 0; }
+  #reader-container:not(.chrome-reading-mode) .reading-word.active-word { background: rgba(var(--accent-rgb), 0.2); color: var(--accent) !important; border-bottom: 1px solid var(--accent); border-radius: 2px; }
   .reading-word.focus-word { color: #fff !important; text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.8); filter: brightness(1.3); }
+  #reader-container.chrome-reading-mode .reading-word.active-word { background: none; border-bottom: none; }
+  .chrome-paragraph-active { border-left: 3px solid rgba(var(--accent-rgb),0.8); padding-left: 1rem; margin-left: -1rem; }
 
   /* Theme Variable Definitions */
   #reader-container.theme-void { 
@@ -224,21 +254,158 @@ const enjoyText = 'Enjoying the chronicles?';
   #reader-container .prose { color: var(--text) !important; }
   
   /* Apply variables to toolbar elements */
-  #reader-toolbar { border-color: var(--border) !important; }
+  #reader-toolbar { 
+    border-color: var(--border) !important; 
+    --reader-toolbar-offset: 4rem;
+  }
   #reader-toolbar .text-gold\/40, #reader-toolbar .text-gold\/50, #reader-toolbar .text-gold\/30 { color: var(--muted) !important; }
   #reader-toolbar .text-gold, #reader-toolbar .text-gold\/70 { color: var(--accent) !important; }
   #reader-toolbar .border-gold\/10 { border-color: var(--border) !important; }
   #reader-toolbar .bg-gold\/5, #reader-toolbar .bg-void\/40 { background-color: var(--border) !important; }
   #reader-toolbar .dot { background-color: var(--accent); }
   #theme-dropdown .dot { border: 1px solid var(--border); }
+  #global-header.reader-nav-auto {
+    transition: transform 0.35s ease, opacity 0.35s ease;
+  }
+  #global-header.reader-nav-auto.reader-nav-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  #reader-toolbar.reader-toolbar-auto {
+    position: sticky;
+    top: var(--reader-toolbar-offset, 4rem);
+    transition: top 0.3s ease, border-radius 0.3s ease, box-shadow 0.3s ease;
+    z-index: 45;
+  }
+  #reader-toolbar.reader-toolbar-auto.reader-toolbar-pinned {
+    top: 0;
+    border-radius: 0;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
 </style>
 
 <script is:inline>
-  function initReader() {
-    const container = document.getElementById('reader-container');
-    const content = document.getElementById('reading-content');
-    const dataEl = document.getElementById('reader-data');
-    if (!container || !content) return;
+    function initReader() {
+        const container = document.getElementById('reader-container');
+        const content = document.getElementById('reading-content');
+        const dataEl = document.getElementById('reader-data');
+        if (!container || !content) return;
+
+        const header = document.getElementById('global-header');
+        const toolbar = document.getElementById('reader-toolbar');
+
+        if (header) {
+            header.dataset.allowAutoHide = 'true';
+            header.classList.add('reader-nav-auto');
+        }
+        if (toolbar) {
+            toolbar.classList.add('reader-toolbar-auto');
+        }
+
+        let lastScrollY = window.scrollY;
+        let navHeight = header ? header.offsetHeight : 0;
+        let toolbarBaseOffset = 0;
+        let navOffset = 0;
+
+        const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+        const measureToolbarTop = () => {
+            if (!toolbar) return navHeight || 64;
+            const inlineValue = toolbar.style.getPropertyValue('--reader-toolbar-offset');
+            const hadInline = inlineValue !== '';
+            if (hadInline) {
+                toolbar.style.removeProperty('--reader-toolbar-offset');
+            }
+            const computedTop = parseFloat(window.getComputedStyle(toolbar).top);
+            if (hadInline) {
+                toolbar.style.setProperty('--reader-toolbar-offset', inlineValue);
+            }
+            return Number.isFinite(computedTop) ? computedTop : (navHeight || 64);
+        };
+        const updateMetrics = () => {
+            if (header) {
+                navHeight = header.offsetHeight || navHeight;
+            }
+            const fallback = navHeight || 64;
+            const measuredTop = measureToolbarTop();
+            toolbarBaseOffset = Math.max(measuredTop, fallback);
+            navOffset = clamp(navOffset, 0, toolbarBaseOffset);
+            applyPositions();
+        };
+        const applyPositions = () => {
+            const travel = toolbarBaseOffset || navHeight || 64;
+            const offset = clamp(navOffset, 0, travel);
+            if (header) {
+                header.style.transform = `translateY(${-offset}px)`;
+            }
+            if (toolbar) {
+                const remaining = Math.max(toolbarBaseOffset - offset, 0);
+                toolbar.style.setProperty('--reader-toolbar-offset', `${remaining}px`);
+                toolbar.classList.toggle('reader-toolbar-pinned', remaining <= 1);
+            }
+        };
+        updateMetrics();
+
+        const syncPositions = (currentY) => {
+            const isImmersive = localStorage.getItem('reader-immersion') === 'true';
+            const travel = toolbarBaseOffset || navHeight || 64;
+            if (isImmersive) {
+                navOffset = travel;
+                applyPositions();
+                lastScrollY = currentY;
+                return;
+            }
+
+            const delta = currentY - lastScrollY;
+            if (currentY < 20) {
+                navOffset = 0;
+            } else if (delta > 1) {
+                navOffset = clamp(navOffset + delta, 0, travel);
+            } else if (delta < -1) {
+                navOffset = clamp(navOffset + delta, 0, travel);
+            }
+
+            applyPositions();
+            lastScrollY = currentY;
+        };
+
+        const handleScroll = () => {
+            syncPositions(window.scrollY);
+        };
+        const handleResize = () => {
+            updateMetrics();
+            lastScrollY = window.scrollY;
+        };
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                lastScrollY = window.scrollY;
+                applyPositions();
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleResize);
+        document.addEventListener('visibilitychange', handleVisibility);
+        syncPositions(window.scrollY);
+        document.addEventListener('astro:before-preparation', () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            if (header) {
+                header.classList.remove('reader-nav-auto', 'reader-nav-hidden');
+                header.style.transform = '';
+                delete header.dataset.allowAutoHide;
+            }
+            if (toolbar) {
+                toolbar.classList.remove('reader-toolbar-auto', 'reader-toolbar-pinned');
+                toolbar.style.removeProperty('--reader-toolbar-offset');
+            }
+        });
+
+        const ua = navigator.userAgent || '';
+        const isChromeWindows = ua.includes('Windows') && ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR');
+        if (isChromeWindows) {
+            container.classList.add('chrome-reading-mode');
+        }
 
     // --- 1. CUSTOM DROPDOWN ENGINE ---
     function setupCustomDropdown(dropdownId, onChange) {
@@ -335,9 +502,14 @@ const enjoyText = 'Enjoying the chronicles?';
       // Signals: show === true (Fake OUT / Normal), show === false (Fake ON / Immersive)
       if (gH) gH.style.setProperty('display', show ? 'flex' : 'none', 'important');
       if (sB) sB.style.setProperty('display', show ? 'flex' : 'none', 'important');
-      if (rT) { 
-          rT.style.top = show ? '4rem' : '0px'; 
-          rT.style.borderRadius = show ? '0.5rem' : '0px'; 
+      if (rT) {
+          if (show) {
+              navOffset = clamp(navOffset, 0, toolbarBaseOffset);
+          } else {
+              navOffset = toolbarBaseOffset;
+          }
+          applyPositions();
+          rT.style.borderRadius = show ? '0.5rem' : '0px';
       }
       if (eI) eI.classList.toggle('hidden', !show);
       if (sI) sI.classList.toggle('hidden', show);
@@ -395,6 +567,12 @@ const enjoyText = 'Enjoying the chronicles?';
             this.isPaused = false;
             this.utterance = null;
             this.nextUtterance = null;
+            const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+            const isChrome = ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR');
+            this.isChromeWindows = isChrome && ua.includes('Windows');
+            this.isChromeAndroid = isChrome && ua.includes('Android');
+            this.activeParagraph = null;
+            this.androidWordPointer = 0;
 
             // Performance + sync helpers
             this.activeIdx = null;
@@ -554,11 +732,25 @@ const enjoyText = 'Enjoying the chronicles?';
             if (this.activeIdx !== null && this.words[this.activeIdx]) {
                 this.words[this.activeIdx].classList.remove('active-word');
             }
+            if ((this.isChromeWindows || this.isChromeAndroid) && this.activeParagraph) {
+                this.activeParagraph.classList.remove('chrome-paragraph-active');
+                this.activeParagraph = null;
+            }
 
             this.activeIdx = index;
             const el = this.words[index];
             if (el) {
-                el.classList.add('active-word');
+                if (!(this.isChromeWindows || this.isChromeAndroid)) {
+                    el.classList.add('active-word');
+                }
+
+                if (this.isChromeWindows || this.isChromeAndroid) {
+                    const paragraph = el.closest('p');
+                    if (paragraph) {
+                        paragraph.classList.add('chrome-paragraph-active');
+                        this.activeParagraph = paragraph;
+                    }
+                }
 
                 // Throttle scrollIntoView to keep Chrome responsive on long chapters
                 if (this.isPlaying) {
@@ -621,6 +813,7 @@ const enjoyText = 'Enjoying the chronicles?';
 
             // Track chunk for fallback/highlight resume
             this.currentChunkIndices = chunkIndices;
+            this.androidWordPointer = 0;
             this.boundaryEventsSeen = 0;
             this.clearFallbackTimers();
 
@@ -636,6 +829,7 @@ const enjoyText = 'Enjoying the chronicles?';
                 if (typeof event.charIndex !== 'number') return;
 
                 this.boundaryEventsSeen++;
+
                 if (this.boundaryEventsSeen == 1) {
                     // Real boundary events are flowing → stop any fallback timers
                     this.clearFallbackTimers();
@@ -759,40 +953,6 @@ const enjoyText = 'Enjoying the chronicles?';
     }
 
     const celestialVoice = new CelestialVoice();
-
-    // --- 7. AUTO-HIDE SCROLL LOGIC ---
-    let lastScrollY = window.scrollY;
-    if (gH) gH.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-    if (rT) rT.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s ease, border-radius 0.5s ease, border-color 0.5s ease';
-
-    const handleScroll = () => {
-        const isImmersive = localStorage.getItem('reader-immersion') === 'true';
-        if (isImmersive) return;
-
-        const currentY = window.scrollY;
-        const delta = currentY - lastScrollY;
-
-        if (Math.abs(delta) > 10) {
-            if (delta > 0 && currentY > 100) {
-                // Scrolling Down -> Hide Nav, Stick Toolbar to absolute top
-                if (gH) gH.style.transform = 'translateY(-100%)';
-                if (rT) {
-                    rT.style.top = '0.25rem'; // Tiny margin for aesthetics
-                    rT.style.transform = 'translateY(0)';
-                }
-            } else {
-                // Scrolling Up -> Show Nav, Restore Toolbar offset
-                if (gH) gH.style.transform = 'translateY(0)';
-                if (rT) {
-                    rT.style.top = '4rem';
-                    rT.style.transform = 'translateY(0)';
-                }
-            }
-            lastScrollY = currentY;
-        }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // --- 8. CLEANUP ENGINE ---
     function cleanupReader() {
