@@ -1,4 +1,4 @@
----
+ï»¿---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
@@ -28,7 +28,7 @@ const orderedRows = daoTableEntries
     cultivationLevel: entry.data.cultivationLevel,
     tier: entry.data.tier,
     joined: entry.data.joined,
-    note: entry.data.note,
+    roleplay: entry.body?.trim(),
     status: entry.data.status,
     image: tierLookup.get(entry.data.tier)?.image,
   }));
@@ -46,7 +46,7 @@ const archiveCards = [
   },
   {
     title: 'Immortal Spirits',
-    description: 'Hall for legendary benefactors – opening soon.',
+    description: 'Hall for legendary benefactors â€“ opening soon.',
     href: '/dao-table/immortal-spirits',
   },
 ];
@@ -57,14 +57,14 @@ const archiveCards = [
     <div class="container mx-auto px-4 text-center max-w-3xl">
       <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Ledger of Tributes</p>
       <h1 class="text-5xl font-serif text-gold tracking-[0.15em] uppercase mb-4">Dao Table</h1>
-      <p class="text-sm text-[#d1d1c7]/70">Every ledger slot below represents a cultivator who tithed to keep the heavens lit. The table updates itself as new Markdown records are committed.</p>
+      <p class="text-sm text-[#d1d1c7]/70">Every ledger slot below represents a cultivator who tithed to keep the heavens lit. Archivist seals flare whenever a new tribute is etched into the jade tablets.</p>
     </div>
   </section>
 
   <section class="container mx-auto px-4 py-16">
     <div class="flex flex-col gap-6 mb-12 text-center">
       <h2 class="text-2xl font-serif text-gold tracking-[0.3em] uppercase">Recognized Contributors</h2>
-      <p class="text-sm text-[#d1d1c7]/60">Grid auto-expands as you add or remove Markdown entries inside <code>src/content/dao-table/table</code>.</p>
+      <p class="text-sm text-[#d1d1c7]/60">The grid expands of its own accord as new tributes are sworn and elder names retire to the ancestral scrolls.</p>
     </div>
 
     {orderedRows.length === 0 ? (
@@ -78,7 +78,7 @@ const archiveCards = [
               <p class="text-[10px] text-gold/60 uppercase tracking-[0.4em] mb-3">{row.tier}</p>
               <h3 class="text-2xl font-serif text-gold tracking-[0.05em]">{row.alias}</h3>
               <p class="text-xs text-[#d1d1c7]/60 italic mb-4">{row.cultivationLevel}</p>
-              {row.note && <p class="text-sm text-[#d1d1c7]/70">{row.note}</p>}
+              {row.roleplay && <p class="text-sm text-[#d1d1c7]/70 whitespace-pre-line">{row.roleplay}</p>}
               <div class="text-[10px] text-gold/40 uppercase tracking-[0.3em] mt-6 flex justify-between">
                 <span>{row.status}</span>
                 <span>{row.joined ? `Since ${row.joined}` : 'Active'}</span>
@@ -95,7 +95,7 @@ const archiveCards = [
       <div class="text-center max-w-3xl mx-auto mb-12">
         <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Sub-ledgers</p>
         <h2 class="text-3xl font-serif text-gold tracking-[0.2em] uppercase">Celestial Archives</h2>
-        <p class="text-sm text-[#d1d1c7]/70">Each archive below is powered entirely by Markdown – click anywhere on the card to drill into its page.</p>
+        <p class="text-sm text-[#d1d1c7]/70">Each archive below chronicles a different facet of the sectâ€™s society. Step through any tablet to walk that hall.</p>
       </div>
       <div class="archive-grid">
         {archiveCards.map((card) => (
@@ -169,4 +169,5 @@ const archiveCards = [
     transform: translateY(-6px);
   }
 </style>
+
 

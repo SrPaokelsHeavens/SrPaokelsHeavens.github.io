@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
@@ -16,27 +16,32 @@ const tierImages = new Map(tierEntries.map((entry) => [entry.data.tier, entry.da
 
 const members = await getCollection('sectMembers');
 
-const benefitPlan = [
-  { tier: 'Celestial Body Refining Realm', perks: ['Hidden Wiki'] },
-  { tier: 'Celestial Foundation Realm', perks: ['Special tomes & chapters'] },
-  { tier: 'Celestial Core Realm', perks: ['Mysterious manuscripts'] },
-  { tier: 'Celestial Soul Realm', perks: ['Our own Heavenly Reader'] },
-  { tier: 'Celestial Transformation Realm', perks: ['Web & mobile game projects (closed alphas)', 'Amazon full books'] },
-  { tier: 'Celestial Sovereign Realm', perks: ['Merch drops', 'Web sect pavilion', 'And many more in development'] },
-];
-
-const cumulativePerks = [];
-const tierBenefits = new Map();
-
-benefitPlan.forEach((plan, index) => {
-  const totalChapters = 5 * (index + 1);
-  cumulativePerks.push(...plan.perks);
-  const perks = [`Up to ${totalChapters} advanced chapters`, ...cumulativePerks];
-  tierBenefits.set(plan.tier, {
-    chapters: totalChapters,
-    perks,
-  });
-});
+const tierBenefits = new Map([
+  [
+    'Celestial Body Refining Realm',
+    'Initiates who keep the braziers lit earn early whispers from the scriptorium and shelter within the Hidden Annex.',
+  ],
+  [
+    'Celestial Foundation Realm',
+    'Bridge Wardens steady every release cycle and are entrusted with sealed tomes pulled straight from the presses.',
+  ],
+  [
+    'Celestial Core Realm',
+    'Formation archivists receive experimental manuscripts and assist in weaving the sect’s deeper systems.',
+  ],
+  [
+    'Celestial Soul Realm',
+    'Continuity keepers commune with the Heavenly Reader and can request echoes of long-lost sagas.',
+  ],
+  [
+    'Celestial Transformation Realm',
+    'Thunder envoys fund metamorphic projects—closed trials, cross-realm voyages, and other ambitious rites.',
+  ],
+  [
+    'Celestial Sovereign Realm',
+    'Sovereign patrons steward pavilion expansions, ceremonial regalia, and whatever new wonders the sect prototypes.',
+  ],
+]);
 
 const tierGroups = tierOrder.map((tier) => {
   const people = members
@@ -47,7 +52,7 @@ const tierGroups = tierOrder.map((tier) => {
       epithet: entry.data.epithet,
       focus: entry.data.focus,
       since: entry.data.since,
-      note: entry.data.note,
+      roleplay: entry.body?.trim(),
       image: tierImages.get(tier),
     }));
 
@@ -64,7 +69,7 @@ const tierGroups = tierOrder.map((tier) => {
     <div class="container mx-auto px-4 max-w-3xl text-center">
       <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Recurring Patrons</p>
       <h1 class="text-4xl font-serif text-gold tracking-[0.2em] uppercase mb-4">Sect Immortal Members</h1>
-      <p class="text-sm text-[#d1d1c7]/70">Every monthly pledge keeps our scribes housed, the servers humming, and the experimentation budget alive. Add or remove members by editing Markdown files inside <code>src/content/dao-table/sect-immortal-members</code>.</p>
+      <p class="text-sm text-[#d1d1c7]/70">These pledges are the lifeblood of the Sect: incense for the ancestor tablets, spirit stones for the scribes, and quiet wards that let new chronicles bloom. Add or remove members by updating the Dao Table markdown scrolls whenever the ledger needs to be refreshed.</p>
     </div>
   </section>
 
@@ -72,9 +77,9 @@ const tierGroups = tierOrder.map((tier) => {
     {tierGroups.map((group) => (
       <div>
         <div class="text-center mb-8">
-          <h2 class="text-3xl font-serif text-gold tracking-[0.3em] uppercase">{group.tier}</h2>
+          <h2 class="tier-heading text-3xl font-serif text-gold uppercase">{group.tier}</h2>
           {group.benefits && (
-            <p class="text-sm text-[#d1d1c7]/70 max-w-2xl mx-auto mt-4">Benefits: {group.benefits.perks.join(', ')}.</p>
+            <p class="text-sm text-[#d1d1c7]/70 max-w-2xl mx-auto mt-4">{group.benefits}</p>
           )}
         </div>
 
@@ -89,7 +94,7 @@ const tierGroups = tierOrder.map((tier) => {
                   <p class="text-[10px] text-gold/60 uppercase tracking-[0.3em] mb-2">{member.focus || 'Sect Member'}</p>
                   <h3 class="text-2xl font-serif text-gold mb-1">{member.alias}</h3>
                   <p class="text-xs text-[#d1d1c7]/60 italic mb-4">{member.epithet || 'Immortal Member'}</p>
-                  {member.note && <p class="text-sm text-[#d1d1c7]/70">{member.note}</p>}
+                  {member.roleplay && <p class="text-sm text-[#d1d1c7]/70 whitespace-pre-line">{member.roleplay}</p>}
                   <div class="text-[10px] text-gold/40 uppercase tracking-[0.3em] mt-6">{member.since ? `Since ${member.since}` : 'Active'}</div>
                 </div>
               </article>
@@ -102,6 +107,17 @@ const tierGroups = tierOrder.map((tier) => {
 </BaseLayout>
 
 <style>
+  .tier-heading {
+    letter-spacing: 0.3em;
+  }
+
+  @media (max-width: 480px) {
+    .tier-heading {
+      font-size: 1.875rem;
+      letter-spacing: 0.15em;
+    }
+  }
+
   .dao-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -129,3 +145,4 @@ const tierGroups = tierOrder.map((tier) => {
     padding: 1.75rem;
   }
 </style>
+

@@ -141,48 +141,90 @@ const enjoyText = 'Enjoying the chronicles?';
       </div>
 
       <!-- TYPOGRAPHY SUB-BAR -->
-      <div id="font-controls" class="hidden w-full mt-1 pt-1 border-t border-gold/10 flex items-center justify-between px-2 animate-fade-in h-6">
-          <div class="flex items-center gap-2 h-full">
-              <span class="text-[7px] text-gold/40 uppercase tracking-[0.1em] h-full flex items-center leading-none">Aura</span>
-              <span id="font-size-val" class="text-[8px] text-gold/60 min-w-[15px] text-center font-mono border border-gold/10 rounded px-1 h-full flex items-center justify-center leading-none">18</span>
-          </div>
-          
-          <div class="flex items-center gap-2 h-full">
-              <div class="relative custom-dropdown h-full" id="family-dropdown">
-                <button class="dropdown-trigger px-2 h-full bg-void/40 border border-gold/10 rounded-md text-[7px] text-gold/50 uppercase tracking-widest flex items-center justify-center leading-none">Script</button>
-                <div class="dropdown-menu hidden absolute right-0 top-7 w-40 bg-void/98 border border-gold/20 p-1 rounded shadow-2xl z-50 animate-fade-in">
-                  <button class="dropdown-opt w-full px-2 py-1 hover:bg-gold/10 text-[8px] text-gold/60 text-left rounded" data-value="inherit">Default</button>
-                  <button class="dropdown-opt w-full px-2 py-1 hover:bg-gold/10 text-[8px] text-gold/60 text-left rounded" data-value="'Inter', sans-serif">Modern</button>
-                </div>
+      <div id="font-controls" class="hidden w-full mt-1 pt-1 border-t border-gold/10 flex items-center justify-center gap-2 animate-fade-in px-2 h-6">
+          <div class="micro-control">
+              <button data-panel-target="font-size-panel" class="micro-btn" title="Font Size">
+                  <span class="text-[10px] font-semibold tracking-[0.3em]">A±</span>
+              </button>
+              <div id="font-size-panel" class="micro-panel hidden">
+                  <div class="panel-row justify-between items-center">
+                      <span class="panel-label">Size</span>
+                      <span id="font-size-val" class="panel-value">18</span>
+                  </div>
+                  <div class="panel-row justify-between">
+                      <button id="font-dec-alt" type="button" class="mini-btn">-</button>
+                      <button id="font-inc-alt" type="button" class="mini-btn">+</button>
+                  </div>
               </div>
+          </div>
+          <div class="w-px h-3 bg-gold/10"></div>
 
-              <div class="relative custom-dropdown h-full" id="ink-dropdown">
-                <button class="dropdown-trigger px-2 h-full bg-void/40 border border-gold/10 rounded-md flex items-center justify-center" title="Ink Color">
-                  <span class="dot w-2 h-2 rounded-full bg-[#e1e1e1] border border-white/10"></span>
-                </button>
-                <div class="dropdown-menu hidden absolute right-0 top-7 w-8 bg-void/98 border border-gold/20 p-1 rounded-md shadow-2xl z-50 animate-fade-in flex flex-col gap-1 items-center">
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#000000" title="Void Black">
-                        <span class="w-3 h-3 rounded-full bg-[#000000] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#333333" title="Dark Grey">
-                        <span class="w-3 h-3 rounded-full bg-[#333333] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#777777" title="Shadow Grey">
-                        <span class="w-3 h-3 rounded-full bg-[#777777] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#D1D1C7" title="Stone">
-                        <span class="w-3 h-3 rounded-full bg-[#D1D1C7] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#c5a059" title="Ancient Gold">
-                        <span class="w-3 h-3 rounded-full bg-[#c5a059] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#e1e1e1" title="Bone White">
-                        <span class="w-3 h-3 rounded-full bg-[#e1e1e1] border border-white/5 block"></span>
-                    </button>
-                    <button class="dropdown-opt p-1 hover:bg-gold/10 rounded-full transition-all" data-value="#ffffff" title="Pure Light">
-                        <span class="w-3 h-3 rounded-full bg-[#ffffff] border border-white/5 block"></span>
-                    </button>
-                </div>
+          <div class="micro-control">
+              <button data-panel-target="line-height-panel" class="micro-btn" title="Line Height">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3h8"/><path d="M8 21h8"/><path d="M12 7v10"/><path d="m9 10 3-3 3 3"/><path d="m9 14 3 3 3-3"/></svg>
+              </button>
+              <div id="line-height-panel" class="micro-panel hidden">
+                  <div class="panel-row justify-between items-center">
+                      <span class="panel-label">Line</span>
+                      <span id="line-height-val" class="panel-value">1.80</span>
+                  </div>
+                  <div class="panel-row">
+                      <input id="line-height-slider" type="range" min="1.2" max="2.4" step="0.05" class="reader-slider flex-1" />
+                  </div>
+              </div>
+          </div>
+          <div class="micro-control">
+              <button data-panel-target="letter-spacing-panel" class="micro-btn" title="Tracking">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M4 12h16"/><path d="M8 16l-4 4"/><path d="m16 16 4 4"/></svg>
+              </button>
+              <div id="letter-spacing-panel" class="micro-panel hidden">
+                  <div class="panel-row justify-between items-center">
+                      <span class="panel-label">Tracking</span>
+                      <span id="letter-spacing-val" class="panel-value">0.00em</span>
+                  </div>
+                  <div class="panel-row">
+                      <input id="letter-spacing-slider" type="range" min="0" max="0.12" step="0.005" class="reader-slider flex-1" />
+                  </div>
+              </div>
+          </div>
+          <div class="w-px h-3 bg-gold/10"></div>
+
+          <div class="micro-control">
+              <button data-panel-target="font-family-panel" class="micro-btn" title="Font Family">
+                  <span class="text-[11px] font-serif tracking-[0.3em]">Aa</span>
+              </button>
+              <div id="font-family-panel" class="micro-panel hidden min-w-[11rem]">
+                  <div class="panel-row justify-between items-center">
+                      <span class="panel-label">Family</span>
+                      <span id="font-family-label" class="panel-value uppercase tracking-[0.2em]">Serif</span>
+                  </div>
+                  <div class="mt-2 space-y-1">
+                      <button class="option-btn" data-font-value="inherit" data-label="Serif">Serif (Default)</button>
+                      <button class="option-btn" data-font-value="'Cinzel', serif" data-label="Cinzel">Cinzel</button>
+                      <button class="option-btn" data-font-value="'Inter', sans-serif" data-label="Inter">Inter</button>
+                      <button class="option-btn" data-font-value="'Georgia', serif" data-label="Georgia">Georgia</button>
+                  </div>
+              </div>
+          </div>
+
+          <div class="micro-control">
+              <button data-panel-target="ink-panel" class="micro-btn" title="Ink Color">
+                  <span id="ink-trigger-dot" class="ink-dot" style="background-color: #e1e1e1;"></span>
+              </button>
+              <div id="ink-panel" class="micro-panel hidden">
+                  <div class="panel-row justify-between items-center mb-2">
+                      <span class="panel-label">Ink</span>
+                      <span id="ink-label" class="panel-value uppercase tracking-[0.2em]">Bone</span>
+                  </div>
+                  <div class="ink-panel">
+                      <button class="ink-option" data-ink-value="#000000" data-label="Void"><span style="background-color:#000000"></span></button>
+                      <button class="ink-option" data-ink-value="#333333" data-label="Ash"><span style="background-color:#333333"></span></button>
+                      <button class="ink-option" data-ink-value="#777777" data-label="Mist"><span style="background-color:#777777"></span></button>
+                      <button class="ink-option" data-ink-value="#D1D1C7" data-label="Stone"><span style="background-color:#D1D1C7"></span></button>
+                      <button class="ink-option" data-ink-value="#c5a059" data-label="Gold"><span style="background-color:#c5a059"></span></button>
+                      <button class="ink-option" data-ink-value="#e1e1e1" data-label="Bone"><span style="background-color:#e1e1e1"></span></button>
+                      <button class="ink-option" data-ink-value="#ffffff" data-label="Light"><span style="background-color:#ffffff"></span></button>
+                  </div>
               </div>
           </div>
       </div>
@@ -250,8 +292,12 @@ const enjoyText = 'Enjoying the chronicles?';
     --bg: #051a0b; --text: #b0debc; --accent: #4ae274; --accent-rgb: 74, 226, 116; --muted: rgba(74, 226, 116, 0.5); --border: rgba(74, 226, 116, 0.1); 
   }
 
-  #reader-container { background-color: var(--bg) !important; color: var(--text) !important; }
-  #reader-container .prose { color: var(--text) !important; }
+  #reader-container { 
+    --reader-ink: var(--text);
+    background-color: var(--bg) !important; 
+    color: var(--reader-ink, var(--text)) !important; 
+  }
+  #reader-container .prose { color: var(--reader-ink, var(--text)) !important; }
   
   /* Apply variables to toolbar elements */
   #reader-toolbar { 
@@ -264,6 +310,159 @@ const enjoyText = 'Enjoying the chronicles?';
   #reader-toolbar .bg-gold\/5, #reader-toolbar .bg-void\/40 { background-color: var(--border) !important; }
   #reader-toolbar .dot { background-color: var(--accent); }
   #theme-dropdown .dot { border: 1px solid var(--border); }
+  #font-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 2.5rem;
+  }
+  .micro-control {
+    position: relative;
+  }
+  .micro-btn {
+    width: 28px;
+    height: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    background-color: rgba(var(--accent-rgb,197,160,89),0.05);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .micro-btn.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(var(--accent-rgb,197,160,89),0.35);
+  }
+  .micro-btn:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb,197,160,89),0.35);
+    transform: translateY(-1px);
+  }
+  .micro-btn svg,
+  .micro-btn span {
+    pointer-events: none;
+  }
+  .micro-panel {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    min-width: 180px;
+    background: rgba(5,5,5,0.95);
+    border: 1px solid rgba(197,160,89,0.2);
+    border-radius: 0.65rem;
+    padding: 0.75rem;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    z-index: 60;
+  }
+  .micro-panel.hidden {
+    display: none;
+  }
+  .micro-panel .panel-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+  .micro-panel .panel-row:first-child {
+    margin-top: 0;
+  }
+  .panel-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .panel-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.1rem 0.4rem;
+  }
+  .mini-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    color: var(--accent);
+    padding: 0.1rem 0.4rem;
+    font-size: 0.65rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .mini-btn:hover {
+    border-color: var(--accent);
+  }
+  .micro-panel .reader-slider {
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(197,160,89,0.15);
+    accent-color: var(--accent);
+  }
+  .micro-panel .reader-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px rgba(var(--accent-rgb,197,160,89),0.3);
+  }
+  .micro-panel .option-btn {
+    width: 100%;
+    text-align: left;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.35rem;
+    border: 1px solid transparent;
+    color: rgba(209,209,199,0.7);
+  }
+  .micro-panel .option-btn:hover,
+  .micro-panel .option-btn.active {
+    background-color: rgba(var(--accent-rgb,197,160,89),0.12);
+    border-color: rgba(var(--accent-rgb,197,160,89),0.3);
+    color: var(--accent);
+  }
+  .ink-panel {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+    min-width: 140px;
+  }
+  .ink-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+  }
+  .ink-option span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+  }
+  .ink-option:hover,
+  .ink-option.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb,197,160,89),0.4);
+  }
+  .micro-btn .ink-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
   #global-header.reader-nav-auto {
     transition: transform 0.35s ease, opacity 0.35s ease;
   }
@@ -410,25 +609,45 @@ const enjoyText = 'Enjoying the chronicles?';
     // --- 1. CUSTOM DROPDOWN ENGINE ---
     function setupCustomDropdown(dropdownId, onChange) {
         const dropdown = document.getElementById(dropdownId);
-        if (!dropdown) return;
+        if (!dropdown) return { setValue: () => {} };
         const trigger = dropdown.querySelector('.dropdown-trigger');
         const menu = dropdown.querySelector('.dropdown-menu');
-        const opts = dropdown.querySelectorAll('.dropdown-opt');
+        const opts = Array.from(dropdown.querySelectorAll('.dropdown-opt'));
+        if (!trigger || !menu || opts.length === 0) return { setValue: () => {} };
         const triggerDot = trigger.querySelector('.dot');
         const triggerLabel = trigger.querySelector('.trigger-label');
+
+        const applyVisuals = (opt) => {
+            if (!opt) return;
+            if (triggerDot) {
+                const sample = opt.querySelector('.dot, span, div');
+                if (sample) {
+                    const dotColor = window.getComputedStyle(sample).backgroundColor;
+                    if (dotColor) triggerDot.style.backgroundColor = dotColor;
+                }
+            }
+            if (triggerLabel) {
+                triggerLabel.textContent = opt.dataset.label || opt.textContent.trim();
+            }
+            opts.forEach(option => option.classList.toggle('active', option === opt));
+        };
+
+        const commit = (val) => {
+            const opt = opts.find(o => o.dataset.value === val);
+            if (!opt) return;
+            onChange(val);
+            applyVisuals(opt);
+        };
 
         trigger.onclick = (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); };
         document.addEventListener('click', () => menu.classList.add('hidden'));
         opts.forEach(opt => {
             opt.onclick = () => {
-                const val = opt.dataset.value;
-                const dotColor = window.getComputedStyle(opt.querySelector('span') || opt).backgroundColor;
-                if (triggerDot) triggerDot.style.backgroundColor = dotColor;
-                onChange(val);
+                commit(opt.dataset.value);
                 menu.classList.add('hidden');
             };
         });
-        return { setValue: (val) => { const opt = Array.from(opts).find(o => o.dataset.value === val); if (opt) { if (triggerDot) triggerDot.style.backgroundColor = window.getComputedStyle(opt.querySelector('span') || opt).backgroundColor; } } };
+        return { setValue: (val) => { const opt = opts.find(o => o.dataset.value === val); applyVisuals(opt); } };
     }
 
     // --- 2. THEMES & TYPOGRAPHY ---
@@ -440,21 +659,79 @@ const enjoyText = 'Enjoying the chronicles?';
     themeDD.setValue(savedTheme);
     container.className = `min-h-screen transition-colors duration-500 pt-10 pb-32 theme-${savedTheme} w-full`;
 
-    const familyDD = setupCustomDropdown('family-dropdown', (v) => {
-        content.style.fontFamily = v;
-        localStorage.setItem('reader-font-family', v);
+    // Micro panel toggles
+    const fontPanelButtons = Array.from(document.querySelectorAll('#font-controls [data-panel-target]'));
+    let openPanel = null;
+    let openButton = null;
+    const closePanels = () => {
+        if (openPanel && openButton) {
+            openPanel.classList.add('hidden');
+            openButton.classList.remove('active');
+        }
+        openPanel = null;
+        openButton = null;
+    };
+    fontPanelButtons.forEach(btn => {
+        const targetId = btn.getAttribute('data-panel-target');
+        const panel = targetId ? document.getElementById(targetId) : null;
+        if (!panel) return;
+        panel.addEventListener('click', (e) => e.stopPropagation());
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (openPanel && openPanel !== panel) closePanels();
+            const willOpen = panel.classList.contains('hidden');
+            if (willOpen) {
+                panel.classList.remove('hidden');
+                btn.classList.add('active');
+                openPanel = panel;
+                openButton = btn;
+            } else {
+                closePanels();
+            }
+        });
     });
-    const savedF = localStorage.getItem('reader-font-family') || 'inherit';
-    content.style.fontFamily = savedF;
-    familyDD.setValue(savedF);
+    document.addEventListener('click', closePanels);
 
-    const inkDD = setupCustomDropdown('ink-dropdown', (v) => {
-        content.style.color = v;
-        localStorage.setItem('reader-font-color', v);
+    // Font families
+    const familyOptions = Array.from(document.querySelectorAll('[data-font-value]'));
+    const familyLabel = document.getElementById('font-family-label');
+    const applyFamily = (value, label) => {
+        content.style.fontFamily = value;
+        localStorage.setItem('reader-font-family', value);
+        if (familyLabel) familyLabel.textContent = label || 'Serif';
+        familyOptions.forEach(opt => opt.classList.toggle('active', opt.dataset.fontValue === value));
+    };
+    const savedFamily = localStorage.getItem('reader-font-family') || 'inherit';
+    const savedFamilyLabel = familyOptions.find(opt => opt.dataset.fontValue === savedFamily)?.dataset.label || 'Serif';
+    applyFamily(savedFamily, savedFamilyLabel);
+    familyOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            applyFamily(opt.dataset.fontValue || 'inherit', opt.dataset.label || opt.textContent.trim());
+        });
     });
+
+    // Ink colors
+    const inkOptions = Array.from(document.querySelectorAll('[data-ink-value]'));
+    const inkDot = document.getElementById('ink-trigger-dot');
+    const inkLabel = document.getElementById('ink-label');
+    const applyInk = (value, label) => {
+        container.style.setProperty('--reader-ink', value);
+        content.style.color = value;
+        localStorage.setItem('reader-font-color', value);
+        if (inkDot) inkDot.style.backgroundColor = value;
+        if (inkLabel) inkLabel.textContent = label || 'Ink';
+        inkOptions.forEach(opt => opt.classList.toggle('active', opt.dataset.inkValue === value));
+    };
     const savedInk = localStorage.getItem('reader-font-color') || '#e1e1e1';
-    content.style.color = savedInk;
-    inkDD.setValue(savedInk);
+    const savedInkLabel = inkOptions.find(opt => opt.dataset.inkValue === savedInk)?.dataset.label || 'Bone';
+    applyInk(savedInk, savedInkLabel);
+    inkOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            const newValue = opt.dataset.inkValue || savedInk;
+            const newLabel = opt.dataset.label || opt.textContent.trim();
+            applyInk(newValue, newLabel);
+        });
+    });
 
     setupCustomDropdown('voice-dropdown', () => {}); // Just for trigger/close logic
 
@@ -489,6 +766,47 @@ const enjoyText = 'Enjoying the chronicles?';
     [document.getElementById('font-inc-main'), document.getElementById('font-inc-alt')].forEach(b => b && (b.onclick = () => updateFS(fontSize + 2)));
     [document.getElementById('font-dec-main'), document.getElementById('font-dec-alt')].forEach(b => b && (b.onclick = () => fontSize > 12 && updateFS(fontSize - 2)));
     updateFS(fontSize);
+
+    // Line height control
+    let lineHeight = parseFloat(localStorage.getItem('reader-line-height'));
+    if (!lineHeight || Number.isNaN(lineHeight)) lineHeight = 1.8;
+    const lineSlider = document.getElementById('line-height-slider');
+    const lineDisplay = document.getElementById('line-height-val');
+    const updateLineHeight = (value) => {
+        const normalized = Math.min(2.4, Math.max(1.2, value));
+        lineHeight = normalized;
+        if (content) content.style.lineHeight = normalized.toString();
+        if (lineDisplay) lineDisplay.innerText = normalized.toFixed(2);
+        localStorage.setItem('reader-line-height', normalized.toString());
+        if (lineSlider && parseFloat(lineSlider.value) !== normalized) lineSlider.value = normalized.toString();
+    };
+    if (lineSlider) {
+        lineSlider.value = lineHeight.toString();
+        lineSlider.addEventListener('input', (e) => updateLineHeight(parseFloat(e.target.value)));
+    }
+    updateLineHeight(lineHeight);
+
+    // Letter spacing control
+    let letterSpacing = parseFloat(localStorage.getItem('reader-letter-spacing'));
+    if (Number.isNaN(letterSpacing)) letterSpacing = 0;
+    const spacingSlider = document.getElementById('letter-spacing-slider');
+    const spacingDisplay = document.getElementById('letter-spacing-val');
+    const updateLetterSpacing = (value) => {
+        const normalized = Math.min(0.12, Math.max(0, value));
+        letterSpacing = normalized;
+        if (content) content.style.letterSpacing = `${normalized}em`;
+        if (spacingDisplay) {
+            const clean = normalized.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+            spacingDisplay.innerText = `${clean || '0'}em`;
+        }
+        localStorage.setItem('reader-letter-spacing', normalized.toString());
+        if (spacingSlider && parseFloat(spacingSlider.value) !== normalized) spacingSlider.value = normalized.toString();
+    };
+    if (spacingSlider) {
+        spacingSlider.value = letterSpacing.toString();
+        spacingSlider.addEventListener('input', (e) => updateLetterSpacing(parseFloat(e.target.value)));
+    }
+    updateLetterSpacing(letterSpacing);
 
     // --- 5. FULLSCREEN ---
     const fsT = document.getElementById('fullscreen-toggle');

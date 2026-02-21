@@ -68,6 +68,7 @@ const carousel = defineCollection({
     sourceId: z.string(), // Link to the original entity
     featured: z.boolean().default(false),
     priority: z.number().default(0),
+    category: z.string().optional(),
   }),
 });
 
@@ -84,6 +85,7 @@ const settings = defineCollection({
     maxTotalCards: z.number().default(15),
     chaptersPerNovel: z.number().default(1),
     newsLimit: z.number().default(0), // 0 = No limit until maxTotalCards
+    displayType: z.enum(['all', 'chapter', 'news']).default('all'),
 
     // 3. PRIORITY & WEIGHTING
     typePriority: z.array(z.enum(['chapter', 'news', 'manual'])).default(['chapter', 'news', 'manual']),

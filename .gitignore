@@ -14,3 +14,5 @@ yarn-error.log*
 # vite storage
 .vite/
 .npm-cache/
+snapshots/
+Microsoft/

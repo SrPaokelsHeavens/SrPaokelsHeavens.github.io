@@ -1,4 +1,4 @@
-import fs from 'fs';
+ï»¿import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 
@@ -54,12 +54,17 @@ async function forge() {
     }
     const controlContent = fs.readFileSync(CONTROL_FILE, 'utf-8');
     const { data: config } = matter(controlContent);
+    const allowedNewsCategories = Array.isArray(config.newsCategoryFilter)
+        ? new Set(config.newsCategoryFilter)
+        : null;
 
     // 2. Load Registry
     let registry = { processedIds: [], banishedIds: [], lastSync: '' };
     if (fs.existsSync(REGISTRY_FILE)) {
         registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf-8'));
     }
+    registry.processedIds = registry.processedIds || [];
+    registry.banishedIds = registry.banishedIds || [];
 
     // 3. Scan for Sources
     const libraryPath = path.join(CONTENT_PATH, 'library');
@@ -110,6 +115,9 @@ async function forge() {
         newsFiles.forEach(file => {
             const filePath = path.join(newsPath, file);
             const { data } = matter(fs.readFileSync(filePath, 'utf-8'));
+            if (allowedNewsCategories && data.category && !allowedNewsCategories.has(data.category)) {
+                return;
+            }
             sources.push({
                 id: `news-${file.replace('.md', '')}`,
                 title: data.title,
@@ -117,7 +125,8 @@ async function forge() {
                 date: data.publishDate,
                 url: '/news',
                 type: 'news',
-                image: data.image || 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000'
+                image: data.image || 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000',
+                category: data.category
             });
         });
     }
@@ -134,7 +143,7 @@ async function forge() {
 
             sources.push({
                 id: `dao-${relativeSlug.replace(/\//g, '-')}`,
-                title: `${data.name} – ${data.tier}`,
+                title: `${data.name} â€“ ${data.tier}`,
                 excerpt: fallbackExcerpt.trim(),
                 date: data.since || new Date().toISOString().split('T')[0],
                 url: '/dao-table',
@@ -152,10 +161,11 @@ async function forge() {
             if (data.status && data.status !== 'active') {
                 return;
             }
-            const preview = data.note || content.split('\n').find((line) => line.trim().length > 0) || 'Dao table contributor.';
+            const contentSnippet = content.split('\n').find((line) => line.trim().length > 0) || '';
+            const preview = (contentSnippet && contentSnippet.trim()) || data.note || 'Dao table contributor.';
             sources.push({
                 id: `dao-main-${path.basename(file, '.md')}`,
-                title: `${data.alias} – ${data.tier}`,
+                title: `${data.alias} â€“ ${data.tier}`,
                 excerpt: preview.trim(),
                 date: data.joined || new Date().toISOString().split('T')[0],
                 url: '/dao-table',
@@ -167,25 +177,65 @@ async function forge() {
 
     // 4. Forge Cards
     let newlyCreated = 0;
-    const currentFiles = fs.readdirSync(CAROUSEL_PATH).map(f => f.replace('.md', ''));
+    const banishedSet = new Set(registry.banishedIds);
+    const processedSet = new Set();
+
+    const ensureFrontmatter = (source) => {
+        const excerpt =
+            source.type === 'chapter'
+                ? `A new chapter has been uploaded: ${source.title} (Vol. ${source.vol}, Ch. ${source.num})`
+                : (source.excerpt || 'New chronicle available.');
+
+        const payload = {
+            sourceId: source.id,
+            title: source.title,
+            excerpt,
+            image: source.image,
+            url: source.url,
+            type: source.type,
+            publishDate: source.date,
+            featured: false,
+            priority: 0,
+        };
+
+        if (source.category) {
+            payload.category = source.category;
+        }
+
+        return matter.stringify('', payload).trim();
+    };
 
     sources.forEach(source => {
+        if (banishedSet.has(source.id)) {
+            return;
+        }
+
         const fileName = `${source.id}.md`;
         const filePath = path.join(CAROUSEL_PATH, fileName);
+        const desired = ensureFrontmatter(source);
+        const hasFile = fs.existsSync(filePath);
+        const existing = hasFile ? fs.readFileSync(filePath, 'utf-8').trim() : '';
 
-        const isBanished = registry.processedIds.includes(source.id) && !currentFiles.includes(source.id);
-
-        if (config.forceRebuild || (!currentFiles.includes(source.id) && !isBanished)) {
-            const content = `---\nsourceId: "${source.id}"\ntitle: "${source.title}"\nexcerpt: "${source.type === 'chapter' ? `A new chapter has been uploaded: ${source.title} (Vol. ${source.vol}, Ch. ${source.num})` : source.excerpt}"\nimage: "${source.image}"\nurl: "${source.url}"\ntype: "${source.type}"\npublishDate: "${source.date}"\nfeatured: false\npriority: 0\n---\n`;
-            fs.writeFileSync(filePath, content);
+        if (config.forceRebuild || !hasFile || existing !== desired) {
+            fs.writeFileSync(filePath, `${desired}\n`, 'utf-8');
             newlyCreated++;
-            if (!registry.processedIds.includes(source.id)) {
-                registry.processedIds.push(source.id);
-            }
         }
+        processedSet.add(source.id);
     });
 
+    if (config.purgeOrphaned || config.autoCleanup) {
+        const keepers = processedSet;
+        const carouselFiles = fs.readdirSync(CAROUSEL_PATH).filter(f => f.endsWith('.md'));
+        carouselFiles.forEach(file => {
+            const id = file.replace('.md', '');
+            if (!keepers.has(id)) {
+                fs.unlinkSync(path.join(CAROUSEL_PATH, file));
+            }
+        });
+    }
+
     // 5. Update Registry
+    registry.processedIds = Array.from(processedSet);
     registry.lastSync = new Date().toISOString();
     fs.writeFileSync(REGISTRY_FILE, JSON.stringify(registry, null, 2));
 
@@ -193,4 +243,5 @@ async function forge() {
 }
 
 forge().catch(console.error);
+
 
