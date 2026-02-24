@@ -106,6 +106,14 @@ const settings = defineCollection({
   }),
 });
 
+const pageCopy = defineCollection({
+  type: 'content',
+  schema: z.object({
+    page: z.string(),
+    blocks: z.record(z.string(), z.string()),
+  }),
+});
+
 // --- NEWS COLLECTION ---
 const news = defineCollection({
   type: 'content',
@@ -180,6 +188,7 @@ export const collections = {
   news,
   carousel,
   settings,
+  copy: pageCopy,
   dao,
   daoTableEntries,
   daoTiers,

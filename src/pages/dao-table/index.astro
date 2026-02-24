@@ -16,6 +16,10 @@ const tierLookup = new Map(
   tierEntries.map((entry) => [entry.data.tier, { image: entry.data.image, summary: entry.data.summary }])
 );
 
+const copyEntry = (await getCollection('copy')).find((entry) => entry.data.page === 'dao-table');
+const copy = copyEntry?.data.blocks ?? {};
+const text = (key: string, fallback: string) => copy[key] ?? fallback;
+
 const daoTableEntries = (await getCollection('daoTableEntries')).filter((entry) => entry.data.status === 'active');
 const orderedRows = daoTableEntries
   .sort((a, b) => {
@@ -36,17 +40,17 @@ const orderedRows = daoTableEntries
 const archiveCards = [
   {
     title: 'Celestial Tiers',
-    description: 'Browse every tier blueprint and reserve upcoming slots.',
+    description: text('archive_celestial_tiers_desc', 'Browse every tier blueprint and reserve upcoming slots.'),
     href: '/dao-table/celestial-tiers',
   },
   {
     title: 'Sect Immortal Members',
-    description: 'Meet the monthly patrons keeping the sect breathing.',
+    description: text('archive_sect_members_desc', 'Meet the monthly patrons keeping the sect breathing.'),
     href: '/dao-table/sect-immortal-members',
   },
   {
     title: 'Immortal Spirits',
-    description: 'Hall for legendary benefactors – opening soon.',
+    description: text('archive_immortal_spirits_desc', 'Hall for legendary benefactors – opening soon.'),
     href: '/dao-table/immortal-spirits',
   },
 ];
@@ -55,20 +59,20 @@ const archiveCards = [
 <BaseLayout title="Dao Table" description="Ledger of every cultivator sustaining Sr. Paokel's Heavens.">
   <section class="pt-20 pb-12 bg-void">
     <div class="container mx-auto px-4 text-center max-w-3xl">
-      <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Ledger of Tributes</p>
-      <h1 class="text-5xl font-serif text-gold tracking-[0.15em] uppercase mb-4">Dao Table</h1>
-      <p class="text-sm text-[#d1d1c7]/70">Every ledger slot below represents a cultivator who tithed to keep the heavens lit. Archivist seals flare whenever a new tribute is etched into the jade tablets.</p>
+      <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">{text('hero_kicker', 'Ledger of Tributes')}</p>
+      <h1 class="text-5xl font-serif text-gold tracking-[0.15em] uppercase mb-4">{text('hero_title', 'Dao Table')}</h1>
+      <p class="text-sm text-[#d1d1c7]/70">{text('hero_body', 'Every ledger slot below represents a cultivator who tithed to keep the heavens lit. Archivist seals flare whenever a new tribute is etched into the jade tablets.')}</p>
     </div>
   </section>
 
   <section class="container mx-auto px-4 py-16">
     <div class="flex flex-col gap-6 mb-12 text-center">
-      <h2 class="text-2xl font-serif text-gold tracking-[0.3em] uppercase">Recognized Contributors</h2>
-      <p class="text-sm text-[#d1d1c7]/60">The grid expands of its own accord as new tributes are sworn and elder names retire to the ancestral scrolls.</p>
+      <h2 class="text-2xl font-serif text-gold tracking-[0.3em] uppercase">{text('recognized_title', 'Recognized Contributors')}</h2>
+      <p class="text-sm text-[#d1d1c7]/60">{text('recognized_body', 'The grid expands of its own accord as new tributes are sworn and elder names retire to the ancestral scrolls.')}</p>
     </div>
 
     {orderedRows.length === 0 ? (
-      <div class="border border-dashed border-gold/20 text-center py-16 text-sm text-gold/50 uppercase tracking-[0.3em]">Awaiting first ledger entry</div>
+      <div class="border border-dashed border-gold/20 text-center py-16 text-sm text-gold/50 uppercase tracking-[0.3em]">{text('recognized_empty', 'Awaiting first ledger entry')}</div>
     ) : (
       <div class="dao-table-grid">
         {orderedRows.map((row) => (
@@ -81,7 +85,7 @@ const archiveCards = [
               {row.roleplay && <p class="text-sm text-[#d1d1c7]/70 whitespace-pre-line">{row.roleplay}</p>}
               <div class="text-[10px] text-gold/40 uppercase tracking-[0.3em] mt-6 flex justify-between">
                 <span>{row.status}</span>
-                <span>{row.joined ? `Since ${row.joined}` : 'Active'}</span>
+                <span>{row.joined ? `${text('recognized_since_prefix', 'Since')} ${row.joined}` : text('recognized_status_fallback', 'Active')}</span>
               </div>
             </div>
           </article>
@@ -93,19 +97,19 @@ const archiveCards = [
   <section class="bg-void-light/30 py-16">
     <div class="container mx-auto px-4">
       <div class="text-center max-w-3xl mx-auto mb-12">
-        <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Sub-ledgers</p>
-        <h2 class="text-3xl font-serif text-gold tracking-[0.2em] uppercase">Celestial Archives</h2>
-        <p class="text-sm text-[#d1d1c7]/70">Each archive below chronicles a different facet of the sect’s society. Step through any tablet to walk that hall.</p>
+        <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">{text('subledgers_kicker', 'Sub-ledgers')}</p>
+        <h2 class="text-3xl font-serif text-gold tracking-[0.2em] uppercase">{text('subledgers_title', 'Celestial Archives')}</h2>
+        <p class="text-sm text-[#d1d1c7]/70">{text('subledgers_body', 'Each archive below chronicles a different facet of the sect’s society. Step through any tablet to walk that hall.')}</p>
       </div>
       <div class="archive-grid">
         {archiveCards.map((card) => (
           <a href={card.href} class="archive-card">
             <div>
-              <p class="text-[10px] text-gold/50 uppercase tracking-[0.4em] mb-3">Open Ledger</p>
+              <p class="text-[10px] text-gold/50 uppercase tracking-[0.4em] mb-3">{text('subledgers_card_label', 'Open Ledger')}</p>
               <h3 class="text-2xl font-serif text-gold mb-3">{card.title}</h3>
               <p class="text-sm text-[#d1d1c7]/70">{card.description}</p>
             </div>
-            <span class="text-gold text-sm tracking-[0.3em] uppercase">Enter ?</span>
+            <span class="text-gold text-sm tracking-[0.3em] uppercase">{text('subledgers_card_cta', 'Enter ?')}</span>
           </a>
         ))}
       </div>
