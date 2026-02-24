@@ -3,6 +3,7 @@ type: "chapter"
 id: "ultimate-martial-will-v1-ch1"
 title: "The Silent Palace"
 chapter_number: 1
+cover: https://i.ibb.co/wNPbn6R6/Ultimate-martial-will-cover.png
 publishDate: "2026-02-05"
 
 # Relación con la Novela

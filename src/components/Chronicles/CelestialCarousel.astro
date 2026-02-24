@@ -33,7 +33,7 @@ const { events } = Astro.props;
             <div class="absolute inset-0 z-10 p-8 flex flex-col justify-end">
                 <div class="mb-4 flex items-center gap-3">
                     <span class="px-3 py-1 bg-gold text-void text-[10px] font-bold uppercase tracking-widest">
-                        {event.type}
+                        {event.badge || event.category || event.type}
                     </span>
                     <span class="text-gold/60 text-[10px] uppercase tracking-[0.3em]">
                         {event.metadata.date}

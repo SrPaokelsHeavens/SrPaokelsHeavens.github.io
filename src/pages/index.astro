@@ -117,6 +117,8 @@ const allEvents = curated.map(card => ({
     excerpt: card.data.excerpt,
     url: card.data.url,
     image: card.data.image,
+    category: card.data.category,
+    badge: card.data.category || card.data.type,
     metadata: { 
       date: card.data.publishDate,
       author: 'Sect Record' 

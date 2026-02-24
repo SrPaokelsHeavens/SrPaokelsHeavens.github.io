@@ -73,6 +73,24 @@ const carousel = defineCollection({
 });
 
 // --- CELESTIAL CONTROL CENTER (Sovereign Settings) ---
+const highlightEntrySchema = z.object({
+  limit: z.number().default(1),
+  fallbackSourceId: z.string().optional(),
+});
+
+const fallbackCardSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  excerpt: z.string(),
+  image: z.string().optional(),
+  url: z.string().optional(),
+  publishDate: z.string().optional(),
+  type: z.enum(['chapter', 'news', 'manual']).default('manual'),
+  category: z.string().optional(),
+  featured: z.boolean().optional(),
+  priority: z.number().optional(),
+});
+
 const settings = defineCollection({
   type: 'content',
   schema: z.object({
@@ -103,6 +121,17 @@ const settings = defineCollection({
     // 6. FORCE & MAINTENANCE
     forceRebuild: z.boolean().default(false),
     purgeOrphaned: z.boolean().default(true),
+
+    // 7. DAO HIGHLIGHTS
+    daoHighlights: z
+      .object({
+        weeklyContributors: highlightEntrySchema.optional(),
+        celestialTiers: highlightEntrySchema.optional(),
+        sectImmortalMembers: highlightEntrySchema.optional(),
+        immortalSpirits: highlightEntrySchema.optional(),
+        fallbackCard: fallbackCardSchema.optional(),
+      })
+      .optional(),
   }),
 });
 

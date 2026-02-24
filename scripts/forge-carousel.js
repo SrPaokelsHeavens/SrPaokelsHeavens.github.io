@@ -11,6 +11,8 @@ const CONTROL_FILE = path.join(SETTINGS_PATH, 'control.md');
 const DAO_PATH = path.join(CONTENT_PATH, 'dao');
 const DAO_TABLE_PATH = path.join(CONTENT_PATH, 'daoTableEntries');
 const DAO_TIER_PATH = path.join(CONTENT_PATH, 'daoTiers');
+const DAO_MEMBERS_PATH = path.join(CONTENT_PATH, 'dao-table', 'sect-immortal-members');
+const IMMORTAL_SPIRITS_PATH = path.join(CONTENT_PATH, 'dao-table', 'table');
 
 function collectMarkdownFiles(dir) {
     let results = [];
@@ -37,6 +39,7 @@ async function forge() {
     console.log('The Forge is heating up...');
 
     const tierImageMap = new Map();
+    const tierEntriesData = [];
     if (fs.existsSync(DAO_TIER_PATH)) {
         const tierFiles = collectMarkdownFiles(DAO_TIER_PATH);
         tierFiles.forEach((file) => {
@@ -44,6 +47,7 @@ async function forge() {
             if (data?.tier && data?.image) {
                 tierImageMap.set(data.tier, data.image);
             }
+            tierEntriesData.push({ data, file });
         });
     }
 
@@ -57,6 +61,7 @@ async function forge() {
     const allowedNewsCategories = Array.isArray(config.newsCategoryFilter)
         ? new Set(config.newsCategoryFilter)
         : null;
+    const highlightConfig = config.daoHighlights || {};
 
     // 2. Load Registry
     let registry = { processedIds: [], banishedIds: [], lastSync: '' };
@@ -71,6 +76,7 @@ async function forge() {
     const newsPath = path.join(CONTENT_PATH, 'news');
 
     let sources = [];
+    const novelMetadataMap = new Map();
 
     // --- SCAN CHAPTERS ---
     if (fs.existsSync(libraryPath)) {
@@ -79,33 +85,55 @@ async function forge() {
             if (config.novelBlacklist?.includes(novel)) return;
 
             const novelDir = path.join(libraryPath, novel);
-            if (fs.statSync(novelDir).isDirectory()) {
-                const volumes = fs.readdirSync(novelDir);
-                volumes.forEach(vol => {
-                    const volDir = path.join(novelDir, vol);
-                    if (fs.statSync(volDir).isDirectory()) {
-                        const chapters = fs.readdirSync(volDir).filter(f => f.endsWith('.md') && f !== 'metadata.md');
-                        chapters.forEach(ch => {
-                            const chPath = path.join(volDir, ch);
-                            const { data } = matter(fs.readFileSync(chPath, 'utf-8'));
-                            if (data.type === 'chapter') {
-                                sources.push({
-                                    id: `ch-${novel}-${vol}-${ch.replace('.md', '')}`,
-                                    title: data.title,
-                                    novelTitle: data.novel_title,
-                                    novelId: data.novel_id,
-                                    vol: data.vol_number,
-                                    num: data.chapter_number,
-                                    date: data.publishDate || new Date().toISOString().split('T')[0],
-                                    url: `/library/${novel}/${vol}/${ch.replace('.md', '')}`,
-                                    type: 'chapter',
-                                    image: data.cover || 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000'
-                                });
-                            }
-                        });
-                    }
-                });
+            if (!fs.statSync(novelDir).isDirectory()) {
+                return;
             }
+
+            const indexPath = path.join(novelDir, 'index.md');
+            if (fs.existsSync(indexPath)) {
+                const { data: novelMeta } = matter(fs.readFileSync(indexPath, 'utf-8'));
+                if (novelMeta) {
+                    novelMetadataMap.set(novel, novelMeta);
+                    if (novelMeta.id) {
+                        novelMetadataMap.set(novelMeta.id, novelMeta);
+                    }
+                }
+            }
+
+            const volumes = fs.readdirSync(novelDir);
+            volumes.forEach(vol => {
+                const volDir = path.join(novelDir, vol);
+                if (fs.statSync(volDir).isDirectory()) {
+                    const chapters = fs.readdirSync(volDir).filter(f => f.endsWith('.md') && f !== 'metadata.md');
+                    chapters.forEach(ch => {
+                        const chPath = path.join(volDir, ch);
+                        const { data } = matter(fs.readFileSync(chPath, 'utf-8'));
+                        if (data.type === 'chapter') {
+                            const novelMeta =
+                                novelMetadataMap.get(data.novel_id) ||
+                                novelMetadataMap.get(novel) ||
+                                {};
+                            const coverImage =
+                                novelMeta.cover ||
+                                data.cover ||
+                                'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000';
+
+                            sources.push({
+                                id: `ch-${novel}-${vol}-${ch.replace('.md', '')}`,
+                                title: data.title,
+                                novelTitle: novelMeta.title || data.novel_title,
+                                novelId: data.novel_id || novelMeta.id || novel,
+                                vol: data.vol_number,
+                                num: data.chapter_number,
+                                date: data.publishDate || new Date().toISOString().split('T')[0],
+                                url: `/library/${novel}/${vol}/${ch.replace('.md', '')}`,
+                                type: 'chapter',
+                                image: coverImage,
+                            });
+                        }
+                    });
+                }
+            });
         });
     }
 
@@ -175,6 +203,183 @@ async function forge() {
         });
     }
 
+    const sourceMap = new Map(sources.map((entry) => [entry.id, entry]));
+
+    const selectLatest = (entries, dateKey) => {
+        if (!entries.length) return null;
+        return entries
+            .slice()
+            .sort((a, b) => {
+                const dateA = new Date(a[dateKey] || 0).getTime();
+                const dateB = new Date(b[dateKey] || 0).getTime();
+                return dateB - dateA;
+            })[0];
+    };
+
+    const fallbackCard =
+        highlightConfig.fallbackCard && highlightConfig.fallbackCard.id
+            ? {
+                  id: highlightConfig.fallbackCard.id,
+                  title: highlightConfig.fallbackCard.title,
+                  excerpt: highlightConfig.fallbackCard.excerpt,
+                  image: highlightConfig.fallbackCard.image,
+                  url: highlightConfig.fallbackCard.url,
+                  type: highlightConfig.fallbackCard.type || 'manual',
+                  date: highlightConfig.fallbackCard.publishDate || new Date().toISOString().split('T')[0],
+                  category: highlightConfig.fallbackCard.category,
+              }
+            : null;
+
+    const daoHighlights = [];
+
+    const resolveFallbackSource = (entryConfig) => {
+        if (entryConfig?.fallbackSourceId && sourceMap.has(entryConfig.fallbackSourceId)) {
+            return sourceMap.get(entryConfig.fallbackSourceId);
+        }
+        return fallbackCard;
+    };
+
+    const pushHighlight = (suffix, rawSource, options = {}) => {
+        if (!rawSource) return;
+        daoHighlights.push({
+            id: `dao-highlight-${suffix}`,
+            title: rawSource.title || options.title || 'Dao Highlight',
+            excerpt: rawSource.excerpt || options.excerpt || 'New Dao update.',
+            image: rawSource.image || options.image,
+            url: options.url || rawSource.url || '/dao-table',
+            type: options.type || rawSource.type || 'manual',
+            date: rawSource.date || options.date || new Date().toISOString().split('T')[0],
+            category: options.category || rawSource.category,
+        });
+    };
+
+    // Weekly Contributors (Dao Table Entries)
+    if (highlightConfig.weeklyContributors) {
+        const latestContributor = selectLatest(
+            sources.filter((source) => source.id.startsWith('dao-main-')),
+            'date'
+        );
+        const label = 'Weekly Contributors';
+        if (latestContributor) {
+            pushHighlight('contributors', latestContributor, {
+                url: '/dao-table',
+                category: label,
+            });
+        } else {
+            pushHighlight('contributors', resolveFallbackSource(highlightConfig.weeklyContributors), {
+                url: '/dao-table',
+                category: label,
+            });
+        }
+        // Remove all dao-main entries so only highlight remains
+        sources = sources.filter((source) => !source.id.startsWith('dao-main-'));
+    }
+
+    // Celestial Tiers
+    if (highlightConfig.celestialTiers) {
+        const latestTier = tierEntriesData
+            .slice()
+            .sort((a, b) => (b.data.priority ?? 0) - (a.data.priority ?? 0))[0];
+        const label = 'Celestial Tiers';
+        if (latestTier) {
+            pushHighlight('celestial-tiers', {
+                title: latestTier.data.title,
+                excerpt: latestTier.data.summary,
+                image: latestTier.data.image,
+                url: '/dao-table/celestial-tiers',
+                date: new Date().toISOString().split('T')[0],
+                category: label,
+            });
+        } else {
+            const fallbackSource = resolveFallbackSource(highlightConfig.celestialTiers);
+            pushHighlight('celestial-tiers', fallbackSource, {
+                url: '/dao-table/celestial-tiers',
+                category: label,
+            });
+        }
+    }
+
+    // Sect Immortal Members
+    if (highlightConfig.sectImmortalMembers) {
+        const memberFiles = fs.existsSync(DAO_MEMBERS_PATH) ? collectMarkdownFiles(DAO_MEMBERS_PATH) : [];
+        const members = memberFiles.map((file) => {
+            const { data, content } = matter(fs.readFileSync(file, 'utf-8'));
+            const snippet = content.split('\n').find((line) => line.trim().length > 0) || '';
+            return {
+                title: data.alias,
+                excerpt: snippet.trim() || data.focus || data.epithet,
+                date: data.since,
+                image: tierImageMap.get(data.tier),
+            };
+        });
+        const latestMember = selectLatest(members, 'date');
+        const label = 'Sect Immortal Members';
+        if (latestMember) {
+            pushHighlight('sect-members', latestMember, {
+                url: '/dao-table/sect-immortal-members',
+                category: label,
+            });
+        } else {
+            const fallbackSource = resolveFallbackSource(highlightConfig.sectImmortalMembers);
+            pushHighlight('sect-members', fallbackSource, {
+                url: '/dao-table/sect-immortal-members',
+                category: label,
+            });
+        }
+    }
+
+    // Immortal Spirits
+    if (highlightConfig.immortalSpirits) {
+        const spiritFiles = fs.existsSync(IMMORTAL_SPIRITS_PATH) ? collectMarkdownFiles(IMMORTAL_SPIRITS_PATH) : [];
+        const spirits = spiritFiles.map((file) => {
+            const { data, content } = matter(fs.readFileSync(file, 'utf-8'));
+            const snippet = content.split('\n').find((line) => line.trim().length > 0) || '';
+            return {
+                title: data.title || data.alias || 'Immortal Spirit',
+                excerpt: snippet.trim() || data.note,
+                date: data.since,
+            };
+        });
+        const latestSpirit = selectLatest(spirits, 'date');
+        const label = 'Immortal Spirits';
+        if (latestSpirit) {
+            pushHighlight('immortal-spirits', latestSpirit, {
+                url: '/dao-table/immortal-spirits',
+                category: label,
+            });
+        } else {
+            const fallbackSource = resolveFallbackSource(highlightConfig.immortalSpirits);
+            pushHighlight('immortal-spirits', fallbackSource, {
+                url: '/dao-table/immortal-spirits',
+                category: label,
+            });
+        }
+    }
+
+    // Merge highlight sources into main list
+    if (daoHighlights.length) {
+        daoHighlights.forEach((highlight) => {
+            sources.push({
+                id: highlight.id,
+                title: highlight.title,
+                excerpt: highlight.excerpt,
+                image: highlight.image,
+                url: highlight.url,
+                type: highlight.type || 'manual',
+                date: highlight.date,
+                category: highlight.category,
+            });
+        });
+    }
+
+    if (Object.keys(highlightConfig).length > 0) {
+        sources = sources.filter((source) => {
+            if (source.id.startsWith('dao-highlight-')) return true;
+            if (source.id.startsWith('dao-')) return false;
+            return true;
+        });
+    }
+
     // 4. Forge Cards
     let newlyCreated = 0;
     const banishedSet = new Set(registry.banishedIds);
@@ -190,13 +395,16 @@ async function forge() {
             sourceId: source.id,
             title: source.title,
             excerpt,
-            image: source.image,
             url: source.url,
             type: source.type,
             publishDate: source.date,
             featured: false,
             priority: 0,
         };
+
+        if (source.image) {
+            payload.image = source.image;
+        }
 
         if (source.category) {
             payload.category = source.category;
