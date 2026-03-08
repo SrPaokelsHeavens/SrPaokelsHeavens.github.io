@@ -12,6 +12,18 @@ const { events } = Astro.props;
   <div class="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-void via-void/40 to-transparent z-20 pointer-events-none"></div>
   <div class="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-void via-void/40 to-transparent z-20 pointer-events-none"></div>
 
+  <!-- Desktop Chevron Controls -->
+  <button type="button" class="carousel-chevron carousel-chevron--left" data-carousel-prev aria-label="Previous slide">
+    <svg viewBox="0 0 24 48" aria-hidden="true" focusable="false">
+      <path d="M19 3L6 24L19 45" />
+    </svg>
+  </button>
+  <button type="button" class="carousel-chevron carousel-chevron--right" data-carousel-next aria-label="Next slide">
+    <svg viewBox="0 0 24 48" aria-hidden="true" focusable="false">
+      <path d="M5 3L18 24L5 45" />
+    </svg>
+  </button>
+
   <!-- Embla Viewport -->
   <div class="embla overflow-hidden" id="embla-viewport">
     <div class="embla__container flex">
@@ -60,9 +72,26 @@ const { events } = Astro.props;
       ))}
     </div>
   </div>
+
+  <div class="carousel-dots" aria-label="Carousel pagination">
+    {events.map((_, index) => (
+      <button
+        type="button"
+        class={`carousel-dot ${index === 0 ? 'is-active' : ''}`}
+        data-carousel-dot
+        data-index={index}
+        aria-label={`Go to slide ${index + 1}`}
+      ></button>
+    ))}
+  </div>
 </div>
 
 <style>
+  .celestial-carousel-system {
+    --chevron-color: rgba(197, 160, 89, 0.45);
+    --chevron-color-active: rgba(197, 160, 89, 0.8);
+  }
+
   .embla__slide {
     perspective: 1000px;
   }
@@ -82,6 +111,93 @@ const { events } = Astro.props;
     border-color: rgba(197, 160, 89, 0.6);
     box-shadow: 0 0 40px rgba(197, 160, 89, 0.15);
   }
+
+  .carousel-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 1.25rem;
+  }
+
+  .carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    border: 1px solid rgba(197, 160, 89, 0.5);
+    background: rgba(197, 160, 89, 0.12);
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.1);
+    transition: all 250ms ease;
+  }
+
+  .carousel-dot.is-active {
+    width: 18px;
+    background: rgba(197, 160, 89, 0.75);
+    box-shadow: 0 0 14px rgba(197, 160, 89, 0.35);
+  }
+
+  .carousel-chevron {
+    position: absolute;
+    top: 50%;
+    z-index: 30;
+    transform: translateY(-50%);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 9999px;
+    width: 44px;
+    height: 44px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 8, 12, 0.45);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease, border-color 220ms ease, background-color 220ms ease;
+  }
+
+  .carousel-chevron svg {
+    width: 16px;
+    height: 30px;
+  }
+
+  .carousel-chevron path {
+    fill: none;
+    stroke: var(--chevron-color);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 220ms ease;
+  }
+
+  .carousel-chevron--left {
+    left: 2.25rem;
+  }
+
+  .carousel-chevron--right {
+    right: 2.25rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .carousel-chevron {
+      display: inline-flex;
+    }
+
+    .celestial-carousel-system:hover .carousel-chevron,
+    .carousel-chevron:focus-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .carousel-chevron:hover {
+      border-color: rgba(197, 160, 89, 0.45);
+      background: rgba(8, 8, 12, 0.58);
+    }
+
+    .carousel-chevron:hover path,
+    .carousel-chevron:focus-visible path {
+      stroke: var(--chevron-color-active);
+    }
+  }
 </style>
 
 <script>
@@ -89,7 +205,11 @@ const { events } = Astro.props;
   import Autoplay from 'embla-carousel-autoplay'
 
   function setupCarousel() {
-    const viewportNode = document.getElementById('embla-viewport');
+    const root = document.querySelector('.celestial-carousel-system');
+    if (!root) return;
+    if (root.getAttribute('data-carousel-ready') === 'true') return;
+
+    const viewportNode = root.querySelector('#embla-viewport');
     if (!viewportNode) return;
 
     const options = { 
@@ -106,6 +226,9 @@ const { events } = Astro.props;
     };
     
     const emblaApi = EmblaCarousel(viewportNode as HTMLElement, options, [Autoplay(autoplayOptions)]);
+    const prevButton = root.querySelector('[data-carousel-prev]') as HTMLButtonElement | null;
+    const nextButton = root.querySelector('[data-carousel-next]') as HTMLButtonElement | null;
+    const dotButtons = Array.from(root.querySelectorAll('[data-carousel-dot]')) as HTMLButtonElement[];
 
     const updateFocus = () => {
         const slides = emblaApi.slideNodes();
@@ -123,11 +246,29 @@ const { events } = Astro.props;
                 }
             }
         });
+
+        dotButtons.forEach((dot, index) => {
+            if (index === selectedIndex) {
+                dot.classList.add('is-active');
+                dot.setAttribute('aria-current', 'true');
+            } else {
+                dot.classList.remove('is-active');
+                dot.removeAttribute('aria-current');
+            }
+        });
     };
+
+    prevButton?.addEventListener('click', () => emblaApi.scrollPrev());
+    nextButton?.addEventListener('click', () => emblaApi.scrollNext());
+    dotButtons.forEach((dot, index) => {
+        dot.addEventListener('click', () => emblaApi.scrollTo(index));
+    });
 
     emblaApi.on('select', updateFocus);
     emblaApi.on('init', updateFocus);
     emblaApi.on('reInit', updateFocus);
+    root.setAttribute('data-carousel-ready', 'true');
+    updateFocus();
   }
 
   // Support for Astro View Transitions
