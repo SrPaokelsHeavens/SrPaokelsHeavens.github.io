@@ -90,8 +90,8 @@ const pageImage = newsEntries[0]?.data.image ?? 'https://images.unsplash.com/pho
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-news-id');
             const template = document.getElementById(`content-${id}`);
-            if (template && modal && contentArea) {
-                contentArea.innerHTML = template.innerHTML;
+            if (template instanceof HTMLTemplateElement && modal && contentArea) {
+                contentArea.replaceChildren(template.content.cloneNode(true));
                 modal.classList.remove('opacity-0', 'pointer-events-none');
                 document.body.style.overflow = 'hidden';
             }

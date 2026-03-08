@@ -15,7 +15,7 @@ const DAO_MEMBERS_PATH = path.join(CONTENT_PATH, 'dao-table', 'sect-immortal-mem
 const IMMORTAL_SPIRITS_PATH = path.join(CONTENT_PATH, 'dao-table', 'table');
 const PUBLIC_PATH = path.join(process.cwd(), 'public');
 const SITEMAP_FILE = path.join(PUBLIC_PATH, 'sitemap.xml');
-const CANONICAL_BASE_URL = 'https://paokelsheavens.asia';
+const CANONICAL_BASE_URL = (process.env.SITE_URL || 'https://paokelsheavens.asia').replace(/\/+$/, '');
 const STATIC_ROUTES = [
     '/',
     '/library',

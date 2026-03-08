@@ -15,25 +15,34 @@ const {
 	image,
 	noIndex = false,
 } = Astro.props;
-const currentPath = Astro.url.pathname;
-
-const DEPLOY_DOMAIN = 'https://paokelsheavens.asia';
-const BASE_SEGMENT = '/paokelsheavens';
+const currentPath = Astro.url.pathname || '/';
 const fallbackImage = image ?? 'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1200';
-const rawPath = currentPath || '/';
-let canonicalPath = rawPath.startsWith(BASE_SEGMENT)
-	? rawPath.slice(BASE_SEGMENT.length) || '/'
-	: rawPath || '/';
-if (!canonicalPath.startsWith('/')) {
-	canonicalPath = `/${canonicalPath}`;
-}
-const canonicalUrl = new URL(canonicalPath, DEPLOY_DOMAIN).toString();
+const canonicalSite = Astro.site ?? new URL('https://paokelsheavens.asia');
+const canonicalUrl = new URL(currentPath, canonicalSite).toString();
 const metaTitle = `${title} | PAOKELSHEAVENS`;
 const metaDescription = description;
+const baseUrl = import.meta.env.BASE_URL || '/';
+
+const withBase = (path: string) => {
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	if (baseUrl === '/') return normalizedPath;
+	const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+	if (normalizedPath === '/') return `${normalizedBase}/`;
+	return `${normalizedBase}${normalizedPath}`;
+};
+
+const stripBase = (path: string) => {
+	if (baseUrl === '/') return path;
+	const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+	if (path === normalizedBase) return '/';
+	return path.startsWith(normalizedBase) ? path.slice(normalizedBase.length) || '/' : path;
+};
+
+const currentAppPath = stripBase(currentPath);
 
 const isActive = (path: string) => {
-	if (path === '/') return currentPath === '/';
-	return currentPath === path || currentPath.startsWith(`${path}/`);
+	if (path === '/') return currentAppPath === '/';
+	return currentAppPath === path || currentAppPath.startsWith(`${path}/`);
 };
 ---
 
@@ -43,7 +52,7 @@ const isActive = (path: string) => {
 		<meta charset="UTF-8" />
 		<meta name="description" content={metaDescription} />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
 		<meta name="generator" content={Astro.generator} />
 		{noIndex ? (
 			<meta name="robots" content="noindex, nofollow" />
@@ -114,36 +123,36 @@ const isActive = (path: string) => {
 	<body class="min-h-screen flex flex-col bg-void text-[#D1D1C7]">
 		<header id="global-header" class="fixed top-0 left-0 w-full z-[100] border-b border-gold/10 bg-void/80 backdrop-blur-md">
 			<nav class="container mx-auto px-4 h-16 flex items-center justify-between">
-				<a href="/" class="text-xl font-serif font-bold text-gold tracking-tighter hover:scale-105 transition-transform">
+				<a href={withBase('/')} class="text-xl font-serif font-bold text-gold tracking-tighter hover:scale-105 transition-transform">
 					<span class="sm-inline-logo hidden sm:inline">PAOKELSHEAVENS</span>
 					<span class="sm-hidden-logo inline sm:hidden">PKH</span>
 				</a>
 				
 				<ul class="nav-links-desktop hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
 					<li>
-						<a href="/library" class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/library')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
 							LIBRARY
 						</a>
 					</li>
 					<li>
-						<a href="/news" class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/news') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/news')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/news') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
 							NEWS
 						</a>
 					</li>
 					<li>
-						<a href="/dao-table" class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/dao-table') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/dao-table')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/dao-table') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
 							DAO TABLE
 						</a>
 					</li>
 					<li>
-						<a href="/community" class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/community') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/community')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/community') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
 							COMMUNITY
 						</a>
 					</li>
 				</ul>
 				
 				<div class="flex items-center gap-4">
-					<a href="/donations" class="inline-block bg-gold/10 border border-gold/30 px-4 py-2 rounded text-[9px] font-serif text-gold hover:bg-gold hover:text-void transition-all uppercase tracking-[0.2em]">
+					<a href={withBase('/donations')} class="inline-block bg-gold/10 border border-gold/30 px-4 py-2 rounded text-[9px] font-serif text-gold hover:bg-gold hover:text-void transition-all uppercase tracking-[0.2em]">
 						DONATE
 					</a>
 				</div>
@@ -152,13 +161,13 @@ const isActive = (path: string) => {
 
 		<!-- Mobile Navigation - The Sect Seal -->
 		<div id="mobile-menu-overlay" class="fixed inset-0 bg-void/95 z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 backdrop-blur-lg">
-			<button id="close-menu" class="absolute top-8 right-8 text-gold/40 hover:text-gold transition-colors text-2xl font-light">�</button>
+			<button id="close-menu" class="absolute top-8 right-8 text-gold/40 hover:text-gold transition-colors text-2xl font-light">X</button>
 			<nav class="flex flex-col gap-10 text-center">
-				<a href="/library" class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4">LIBRARY</a>
-				<a href="/news" class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 100ms;">NEWS</a>
-				<a href="/dao-table" class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 200ms;">DAO TABLE</a>
-				<a href="/community" class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 300ms;">COMMUNITY</a>
-				<a href="/donations" class="mobile-link text-xs font-serif text-gold/40 tracking-[0.5em] uppercase border border-gold/20 px-8 py-3 opacity-0 translate-y-4" style="transition-delay: 400ms;">DONATE</a>
+				<a href={withBase('/library')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4">LIBRARY</a>
+				<a href={withBase('/news')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 100ms;">NEWS</a>
+				<a href={withBase('/dao-table')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 200ms;">DAO TABLE</a>
+				<a href={withBase('/community')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 300ms;">COMMUNITY</a>
+				<a href={withBase('/donations')} class="mobile-link text-xs font-serif text-gold/40 tracking-[0.5em] uppercase border border-gold/20 px-8 py-3 opacity-0 translate-y-4" style="transition-delay: 400ms;">DONATE</a>
 			</nav>
 		</div>
 
@@ -199,9 +208,8 @@ const isActive = (path: string) => {
 					}
 				};
 				
-				// Run immediately and on intervals to fight aggressive scripts
+				// Run immediately and keep observer scoped to the current page lifecycle
 				protect();
-				setInterval(protect, 1000);
 				
 				// Prevent deletion
 				const observer = new MutationObserver((mutations) => {
@@ -215,6 +223,7 @@ const isActive = (path: string) => {
 					});
 				});
 				observer.observe(document.body, { childList: true });
+				window.addEventListener('pagehide', () => observer.disconnect(), { once: true });
 			})();
 
 			document.addEventListener('DOMContentLoaded', () => {
@@ -296,21 +305,21 @@ const isActive = (path: string) => {
 				<div>
 					<h4 class="text-gold font-serif mb-4 text-[9px] tracking-widest uppercase opacity-40">Navigation</h4>
 					<ul class="text-[10px] space-y-2 text-[#D1D1C7]/60">
-						<li><a href="/library" class="hover:text-gold transition-colors">Library</a></li>
-						<li><a href="/dao-table" class="hover:text-gold transition-colors">Dao Table</a></li>
+						<li><a href={withBase('/library')} class="hover:text-gold transition-colors">Library</a></li>
+						<li><a href={withBase('/dao-table')} class="hover:text-gold transition-colors">Dao Table</a></li>
 					</ul>
 				</div>
 				<div>
 					<h4 class="text-gold font-serif mb-4 text-[9px] tracking-widest uppercase opacity-40">Signals</h4>
 					<div class="flex justify-center md:justify-start gap-4 text-[10px]">
-						<a href="/community" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Community Hub</a>
-						<a href="/news" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Newsroom</a>
+						<a href={withBase('/community')} class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Community Hub</a>
+						<a href={withBase('/news')} class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Newsroom</a>
 						<a href="mailto:admin@paokelsheavens.asia" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Email</a>
 					</div>
 				</div>
 			</div>
 			<div class="mt-12 text-center text-[9px] text-gold/20 uppercase tracking-[0.3em]">
-				� 2026 PAOKELSHEAVENS - Immortal Records
+				(c) 2026 PAOKELSHEAVENS - Immortal Records
 			</div>
 		</footer>
 
