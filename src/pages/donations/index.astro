@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
@@ -55,12 +55,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="w-full max-w-[300px]">
             <div id="paypal-container-FA9AKAMVV7APS"></div>
           </div>
-          <p class="mt-8 text-[10px] text-gold/30 uppercase tracking-widest font-serif">Mortal Support � PayPal</p>
+          <p class="mt-8 text-[10px] text-gold/30 uppercase tracking-widest font-serif">Mortal Support • PayPal</p>
         </div>
 
         <!-- Ko-fi Block -->
         <div class="bg-void-light border border-gold/10 overflow-hidden">
-          <iframe id='kofiframe' src='https://ko-fi.com/srpaokels/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='srpaokels'></iframe>
+          <iframe id='kofiframe' src='https://ko-fi.com/srpaokels/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='srpaokels' loading='lazy' referrerpolicy='strict-origin-when-cross-origin' sandbox='allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox'></iframe>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
 
   <!-- PayPal SDK Loaded Here -->
-  <script is:inline src="https://www.paypal.com/sdk/js?client-id=BAAGyb0oeyqeIqm1YKRBJnSeEjNEkmCS_FGyALdI7Tanh3oVHz1_dD82SuXk-B1hk30HyM9VrIvu2UQkJE&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+  <script is:inline src="https://www.paypal.com/sdk/js?client-id=BAAGyb0oeyqeIqm1YKRBJnSeEjNEkmCS_FGyALdI7Tanh3oVHz1_dD82SuXk-B1hk30HyM9VrIvu2UQkJE&components=hosted-buttons&disable-funding=venmo&currency=USD" crossorigin="anonymous" referrerpolicy="strict-origin-when-cross-origin"></script>
   <script is:inline>
     function initPayPal() {
       if (window.paypal && window.paypal.HostedButtons) {
@@ -93,3 +93,4 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     setTimeout(initPayPal, 2000);
   </script>
 </BaseLayout>
+

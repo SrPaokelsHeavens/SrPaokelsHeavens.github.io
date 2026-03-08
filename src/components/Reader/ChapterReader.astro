@@ -1018,22 +1018,31 @@ const enjoyText = 'Enjoying the chronicles?';
                 this.selectedVoiceName = voices[0].name;
             }
 
-            container.innerHTML = '';
+            container.textContent = '';
             voices.forEach(v => {
                 const isSelected = this.selectedVoiceName === v.name;
                 const btn = document.createElement('button');
                 btn.className = `w-full flex items-center gap-3 px-3 py-2 hover:bg-gold/10 text-[10px] ${isSelected ? 'text-gold bg-gold/5' : 'text-gold/60'} uppercase rounded-lg text-left transition-all`;
-                btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-gold shadow-[0_0_5px_rgba(197,160,89,0.5)]' : 'bg-gold/20'}"></span> ${v.name}`;
+                const dot = document.createElement('span');
+                dot.className = `w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-gold shadow-[0_0_5px_rgba(197,160,89,0.5)]' : 'bg-gold/20'}`;
+                btn.appendChild(dot);
+                btn.appendChild(document.createTextNode(` ${v.name}`));
                 btn.onclick = () => {
                     this.selectedVoiceName = v.name;
                     container.querySelectorAll('button').forEach(b => {
                         b.classList.replace('text-gold', 'text-gold/60');
                         b.classList.remove('bg-gold/5');
-                        b.querySelector('span').classList.replace('bg-gold', 'bg-gold/20');
+                        const indicator = b.querySelector('span');
+                        if (indicator) {
+                            indicator.classList.replace('bg-gold', 'bg-gold/20');
+                        }
                     });
                     btn.classList.replace('text-gold/60', 'text-gold');
                     btn.classList.add('bg-gold/5');
-                    btn.querySelector('span').classList.replace('bg-gold/20', 'bg-gold');
+                    const indicator = btn.querySelector('span');
+                    if (indicator) {
+                        indicator.classList.replace('bg-gold/20', 'bg-gold');
+                    }
                 };
                 container.appendChild(btn);
             });

@@ -50,7 +50,9 @@ const isActive = (path: string) => {
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://storage.ko-fi.com https://www.paypal.com https://www.paypalobjects.com https://*.paypal.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://images.unsplash.com https://i.ibb.co https://placehold.co https://www.paypalobjects.com https://www.paypal.com https://*.paypal.com https://ko-fi.com https://*.ko-fi.com; font-src 'self' data: https://fonts.gstatic.com; frame-src https://ko-fi.com https://*.ko-fi.com https://www.paypal.com https://*.paypal.com; connect-src 'self' https://www.paypal.com https://api.paypal.com https://www.paypalobjects.com https://*.paypal.com; form-action 'self' https://www.paypal.com https://*.paypal.com https://ko-fi.com https://*.ko-fi.com; upgrade-insecure-requests" />
 		<meta name="description" content={metaDescription} />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
 		<meta name="generator" content={Astro.generator} />
@@ -75,6 +77,8 @@ const isActive = (path: string) => {
 		
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+		<link rel="preconnect" href="https://i.ibb.co" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 		<style is:global>
 			/* Force Header Visibility - Ultimate Fortification */
@@ -117,6 +121,12 @@ const isActive = (path: string) => {
 				#sect-seal-btn {
 					display: flex !important;
 				}
+				.mobile-link {
+					min-height: 44px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
 			}
 		</style>
 	</head>
@@ -130,22 +140,22 @@ const isActive = (path: string) => {
 				
 				<ul class="nav-links-desktop hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
 					<li>
-						<a href={withBase('/library')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/library')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/60 hover:text-gold'}`}>
 							LIBRARY
 						</a>
 					</li>
 					<li>
-						<a href={withBase('/news')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/news') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/news')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/news') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/60 hover:text-gold'}`}>
 							NEWS
 						</a>
 					</li>
 					<li>
-						<a href={withBase('/dao-table')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/dao-table') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/dao-table')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/dao-table') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/60 hover:text-gold'}`}>
 							DAO TABLE
 						</a>
 					</li>
 					<li>
-						<a href={withBase('/community')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/community') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+						<a href={withBase('/community')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('/community') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/60 hover:text-gold'}`}>
 							COMMUNITY
 						</a>
 					</li>
@@ -161,7 +171,7 @@ const isActive = (path: string) => {
 
 		<!-- Mobile Navigation - The Sect Seal -->
 		<div id="mobile-menu-overlay" class="fixed inset-0 bg-void/95 z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 backdrop-blur-lg">
-			<button id="close-menu" class="absolute top-8 right-8 text-gold/40 hover:text-gold transition-colors text-2xl font-light">X</button>
+			<button id="close-menu" aria-label="Close mobile menu" class="absolute top-8 right-8 text-gold/70 hover:text-gold transition-colors text-2xl font-light min-w-11 min-h-11">X</button>
 			<nav class="flex flex-col gap-10 text-center">
 				<a href={withBase('/library')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4">LIBRARY</a>
 				<a href={withBase('/news')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 100ms;">NEWS</a>
@@ -171,7 +181,7 @@ const isActive = (path: string) => {
 			</nav>
 		</div>
 
-		<button id="sect-seal-btn" class="md:hidden fixed bottom-8 right-8 z-[110] w-14 h-14 bg-void border border-gold/40 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(197,160,89,0.2)] hover:shadow-[0_0_30px_rgba(197,160,89,0.4)] transition-all group overflow-hidden">
+		<button id="sect-seal-btn" aria-label="Open mobile menu" class="md:hidden fixed bottom-8 right-8 z-[110] w-14 h-14 bg-void border border-gold/40 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(197,160,89,0.2)] hover:shadow-[0_0_30px_rgba(197,160,89,0.4)] transition-all group overflow-hidden">
 			<div class="absolute inset-0 bg-gold/5 group-hover:bg-gold/10 transition-colors"></div>
 			<div class="relative flex flex-col gap-1.5 items-center">
 				<span class="w-5 h-px bg-gold transition-all duration-300"></span>
