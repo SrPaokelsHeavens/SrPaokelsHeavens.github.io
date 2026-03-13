@@ -224,8 +224,9 @@ const { events } = Astro.props;
         stopOnInteraction: false,
         stopOnMouseEnter: true
     };
+    const autoplay = Autoplay(autoplayOptions);
     
-    const emblaApi = EmblaCarousel(viewportNode as HTMLElement, options, [Autoplay(autoplayOptions)]);
+    const emblaApi = EmblaCarousel(viewportNode as HTMLElement, options, [autoplay]);
     const prevButton = root.querySelector('[data-carousel-prev]') as HTMLButtonElement | null;
     const nextButton = root.querySelector('[data-carousel-next]') as HTMLButtonElement | null;
     const dotButtons = Array.from(root.querySelectorAll('[data-carousel-dot]')) as HTMLButtonElement[];
@@ -258,10 +259,15 @@ const { events } = Astro.props;
         });
     };
 
-    prevButton?.addEventListener('click', () => emblaApi.scrollPrev());
-    nextButton?.addEventListener('click', () => emblaApi.scrollNext());
+    const navigate = (action: () => void) => {
+        action();
+        autoplay.reset();
+    };
+
+    prevButton?.addEventListener('click', () => navigate(() => emblaApi.scrollPrev()));
+    nextButton?.addEventListener('click', () => navigate(() => emblaApi.scrollNext()));
     dotButtons.forEach((dot, index) => {
-        dot.addEventListener('click', () => emblaApi.scrollTo(index));
+        dot.addEventListener('click', () => navigate(() => emblaApi.scrollTo(index)));
     });
 
     emblaApi.on('select', updateFocus);
